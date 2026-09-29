@@ -75,7 +75,7 @@ include __DIR__ . '/../layout/header.php';
 
 <p>
 
-    <a href="/e-commerce-labs/shoppn/logout.php">
+    <a href="<?= BASE_URL ?>/logout.php">
         Logout
     </a>
 
