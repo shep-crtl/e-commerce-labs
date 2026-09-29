@@ -1,15 +1,11 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/core/core.php';
 
 session_unset();
 
 session_destroy();
 
-header(
-    'Location: /e-commerce-labs/shoppn/index.php'
-);
-
-exit();
+redirect('/index.php');
 
 ?>
