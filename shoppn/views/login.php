@@ -27,7 +27,7 @@ include __DIR__ . '/layout/header.php';
 
 
 <form
-    action="/e-commerce-labs/shoppn/actions/login_action.php"
+    action="<?= BASE_URL ?>/actions/login_action.php"
     method="POST"
 >
 
@@ -75,7 +75,7 @@ include __DIR__ . '/layout/header.php';
 
     Don't have an account?
 
-    <a href="/e-commerce-labs/shoppn/views/register.php">
+    <a href="<?= BASE_URL ?>/views/register.php">
         Register
     </a>
 

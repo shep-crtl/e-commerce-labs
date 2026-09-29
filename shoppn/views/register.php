@@ -23,7 +23,7 @@ include __DIR__ . '/layout/header.php';
 
 <form
     id="register-form"
-    action="/e-commerce-labs/shoppn/actions/register_action.php"
+    action="<?= BASE_URL ?>/actions/register_action.php"
     method="POST"
 >
 
@@ -188,13 +188,13 @@ include __DIR__ . '/layout/header.php';
 <p>
     Already have an account?
 
-    <a href="/e-commerce-labs/shoppn/views/login.php">
+    <a href="<?= BASE_URL ?>/views/login.php">
         Login
     </a>
 </p>
 
 
-<script src="/e-commerce-labs/shoppn/js/validate.js"></script>
+<script src="<?= BASE_URL ?>/js/validate.js"></script>
 
 
 <?php include __DIR__ . '/layout/footer.php'; ?>

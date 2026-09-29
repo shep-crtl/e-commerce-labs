@@ -31,11 +31,11 @@ include __DIR__ . '/layout/header.php';
 
         <p>
             Please
-            <a href="/e-commerce-labs/shoppn/views/login.php">
+            <a href="<?= BASE_URL ?>/views/login.php">
                 login
             </a>
             or
-            <a href="/e-commerce-labs/shoppn/views/register.php">
+            <a href="<?= BASE_URL ?>/views/register.php">
                 create an account
             </a>
             to continue.
