@@ -15,7 +15,7 @@
 
     <link
         rel="stylesheet"
-        href="/e-commerce-labs/shoppn/css/style.css"
+        href="<?= BASE_URL ?>/css/style.css"
     >
 
 </head>
@@ -29,7 +29,7 @@
     <div class="header-container">
 
         <h1>
-            <a href="/e-commerce-labs/shoppn/index.php">
+            <a href="<?= BASE_URL ?>/index.php">
                 ShopPN
             </a>
         </h1>
@@ -37,18 +37,18 @@
 
         <nav>
 
-            <a href="/e-commerce-labs/shoppn/index.php">
+            <a href="<?= BASE_URL ?>/index.php">
                 Home
             </a>
 
 
             <?php if (!is_logged_in()): ?>
 
-                <a href="/e-commerce-labs/shoppn/views/register.php">
+                <a href="<?= BASE_URL ?>/views/register.php">
                     Register
                 </a>
 
-                <a href="/e-commerce-labs/shoppn/views/login.php">
+                <a href="<?= BASE_URL ?>/views/login.php">
                     Login
                 </a>
 
@@ -67,19 +67,19 @@
                 </span>
 
 
-                <a href="/e-commerce-labs/shoppn/views/account/my_account.php">
+                <a href="<?= BASE_URL ?>/views/account/my_account.php">
                     My Account
                 </a>
 
 
-                <a href="/e-commerce-labs/shoppn/logout.php">
+                <a href="<?= BASE_URL ?>/logout.php">
                     Logout
                 </a>
 
 
                 <?php if (is_admin()): ?>
 
-                    <a href="/e-commerce-labs/shoppn/views/admin/">
+                    <a href="<?= BASE_URL ?>/views/admin/">
                         Admin
                     </a>
 
