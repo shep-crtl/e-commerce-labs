@@ -35,6 +35,25 @@
         </h1>
 
 
+        <!-- Search form — submits to index.php with user_query parameter -->
+        <form
+            class="header-search"
+            action="<?= BASE_URL ?>/index.php"
+            method="GET"
+            role="search"
+        >
+            <input
+                type="text"
+                name="user_query"
+                id="header-search-input"
+                placeholder="Search products..."
+                aria-label="Search products"
+                value="<?= isset($_GET['user_query']) ? htmlspecialchars($_GET['user_query'], ENT_QUOTES, 'UTF-8') : '' ?>"
+            >
+            <button type="submit" aria-label="Submit search">Search</button>
+        </form>
+
+
         <nav>
 
             <a href="<?= BASE_URL ?>/index.php">
@@ -79,8 +98,16 @@
 
                 <?php if (is_admin()): ?>
 
-                    <a href="<?= BASE_URL ?>/views/admin/">
-                        Admin
+                    <a href="<?= BASE_URL ?>/views/admin/brand.php">
+                        Brands
+                    </a>
+
+                    <a href="<?= BASE_URL ?>/views/admin/category.php">
+                        Categories
+                    </a>
+
+                    <a href="<?= BASE_URL ?>/views/admin/product.php">
+                        Products
                     </a>
 
                 <?php endif; ?>
