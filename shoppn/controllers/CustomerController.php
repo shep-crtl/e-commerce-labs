@@ -1,66 +1,125 @@
-<?php
+<!DOCTYPE html>
 
-require_once __DIR__ . '/../classes/CustomerClass.php';
+<html lang="en">
 
-class CustomerController
-{
-    private $customerModel;
+<head>
 
+    <meta charset="UTF-8">
 
-    public function __construct()
-    {
-        $this->customerModel = new CustomerClass();
-    }
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
+    <title>ShopPN</title>
 
-    public function register($data)
-    {
-        if ($this->customerModel->emailExists($data['email'])) {
-            return [
-                'success' => false,
-                'error' => 'Email already registered.'
-            ];
-        }
+    <link
+        rel="stylesheet"
+        href="<?= BASE_URL ?>/css/style.css"
+    >
 
-        $customerId = $this->customerModel->addCustomer(
-            $data['name'],
-            $data['email'],
-            $data['pass'],
-            $data['country'],
-            $data['city'],
-            $data['contact']
-        );
-
-        if ($customerId !== false) {
-            return [
-                'success' => true,
-                'customer_id' => $customerId
-            ];
-        }
-
-        return [
-            'success' => false,
-            'error' => 'Registration failed. Please try again.'
-        ];
-    }
+</head>
 
 
-    public function login($email, $pass)
-    {
-        $customer = $this->customerModel->login(
-            $email,
-            $pass
-        );
+<body>
 
-        if ($customer) {
-            return $customer;
-        }
 
-        return [
-            'success' => false,
-            'error' => 'Invalid email or password.'
-        ];
-    }
-}
+<header>
 
-?>
+    <div class="header-container">
+
+        <h1>
+            <a href="<?= BASE_URL ?>/index.php">
+                ShopPN
+            </a>
+        </h1>
+
+
+        <!-- Search form — submits to index.php with user_query parameter -->
+        <form
+            class="header-search"
+            action="<?= BASE_URL ?>/index.php"
+            method="GET"
+            role="search"
+        >
+            <input
+                type="text"
+                name="user_query"
+                id="header-search-input"
+                placeholder="Search products..."
+                aria-label="Search products"
+                value="<?= isset($_GET['user_query']) ? htmlspecialchars($_GET['user_query'], ENT_QUOTES, 'UTF-8') : '' ?>"
+            >
+            <button type="submit" aria-label="Submit search">Search</button>
+        </form>
+
+
+        <nav>
+
+            <a href="<?= BASE_URL ?>/index.php">
+                Home
+            </a>
+
+
+            <?php if (!is_logged_in()): ?>
+
+                <a href="<?= BASE_URL ?>/views/register.php">
+                    Register
+                </a>
+
+                <a href="<?= BASE_URL ?>/views/login.php">
+                    Login
+                </a>
+
+
+            <?php else: ?>
+
+                <span class="welcome">
+
+                    Welcome,
+                    <?php
+                    echo htmlspecialchars(
+                        $_SESSION['customer_name']
+                    );
+                    ?>
+
+                </span>
+
+
+                <a href="<?= BASE_URL ?>/views/account/my_account.php">
+                    My Account
+                </a>
+
+
+                <a href="<?= BASE_URL ?>/logout.php">
+                    Logout
+                </a>
+
+
+                <?php if (is_admin()): ?>
+
+                    <a href="<?= BASE_URL ?>/views/admin/brand.php">
+                        Brands
+                    </a>
+
+                    <a href="<?= BASE_URL ?>/views/admin/category.php">
+                        Categories
+                    </a>
+
+                    <a href="<?= BASE_URL ?>/views/admin/product.php">
+                        Products
+                    </a>
+
+                <?php endif; ?>
+
+
+            <?php endif; ?>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+<main class="container">
