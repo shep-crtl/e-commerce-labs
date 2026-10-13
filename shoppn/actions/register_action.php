@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $name = trim(strip_tags($_POST['name'] ?? ''));
 $email = trim(strip_tags($_POST['email'] ?? ''));
 $pass = $_POST['password'] ?? '';
+$confirmPass = $_POST['confirm_password'] ?? '';
 $country = trim(strip_tags($_POST['country'] ?? ''));
 $city = trim(strip_tags($_POST['city'] ?? ''));
 $contact = trim(strip_tags($_POST['contact'] ?? ''));
@@ -41,8 +42,14 @@ if (strlen($email) > 50) {
 }
 
 
-if (strlen($pass) < 8) {
-    $_SESSION['error'] = 'Password must be at least 8 characters.';
+if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/', $pass)) {
+    $_SESSION['error'] = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
+    redirect('/views/register.php');
+}
+
+
+if ($pass !== $confirmPass) {
+    $_SESSION['error'] = 'Passwords do not match.';
     redirect('/views/register.php');
 }
 
