@@ -94,6 +94,27 @@ include __DIR__ . '/layout/header.php';
 
     <div class="form-group">
 
+        <label for="confirm_password">
+            Confirm Password
+        </label>
+
+        <input
+            type="password"
+            name="confirm_password"
+            id="confirm_password"
+            required
+        >
+
+        <span
+            id="confirm-password-error"
+            class="field-error"
+        ></span>
+
+    </div>
+
+
+    <div class="form-group">
+
         <label for="country">
             Country
         </label>
@@ -172,6 +193,27 @@ include __DIR__ . '/layout/header.php';
 
         <span
             id="contact-error"
+            class="field-error"
+        ></span>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label for="address">
+            Address
+        </label>
+
+        <input
+            type="text"
+            name="address"
+            id="address"
+            maxlength="200"
+        >
+
+        <span
+            id="address-error"
             class="field-error"
         ></span>
 
