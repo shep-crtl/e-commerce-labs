@@ -1,3 +1,15 @@
+<?php
+
+require_once __DIR__ . '/../../core/core.php';
+require_once __DIR__ . '/../../controllers/CartController.php';
+
+// Instantiate CartController to fetch live cart count and total price (Task 11)
+$headerCartController = new CartController();
+$headerCartIp = get_ip();
+$headerCartCount = $headerCartController->getCartCount($headerCartIp);
+$headerCartTotal = $headerCartController->getCartTotal($headerCartIp);
+
+?>
 <!DOCTYPE html>
 
 <html lang="en">
@@ -60,6 +72,9 @@
                 Home
             </a>
 
+            <a href="<?= BASE_URL ?>/views/cart.php">
+                Cart (<?= (int) $headerCartCount ?>)
+            </a>
 
             <?php if (!is_logged_in()): ?>
 
@@ -117,6 +132,18 @@
 
         </nav>
 
+    </div>
+
+    <!-- Task 11: Cart summary bar required by lab specification -->
+    <div class="cart-summary-bar">
+        <div class="cart-summary-inner">
+            <span class="cart-summary-text">
+                Shopping Cart &mdash; Total Items: <strong><?= (int) $headerCartCount ?></strong> | Total Price: <strong>$<?= number_format((float) $headerCartTotal, 2) ?></strong>
+            </span>
+            <a href="<?= BASE_URL ?>/views/cart.php" class="cart-summary-btn">
+                Go to Cart &rarr;
+            </a>
+        </div>
     </div>
 
 </header>
