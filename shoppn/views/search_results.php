@@ -96,7 +96,7 @@ include __DIR__ . '/layout/header.php';
                                 </a>
 
                                 <a
-                                    href="<?= BASE_URL ?>/index.php?add_cart=<?= (int) $prod['product_id'] ?>"
+                                    href="<?= BASE_URL ?>/actions/add_to_cart_action.php?add_cart=<?= (int) $prod['product_id'] ?>"
                                     class="btn-cart"
                                 >
                                     Add to Cart
