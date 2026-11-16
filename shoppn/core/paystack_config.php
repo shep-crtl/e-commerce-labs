@@ -12,7 +12,7 @@
 if (!defined('PAYSTACK_PUBLIC_KEY')) {
     define(
         'PAYSTACK_PUBLIC_KEY',
-        getenv('PAYSTACK_PUBLIC_KEY') ?: 'pk_test_0e8af6badd07223758fd23affa2ddb5e38eec126 '
+        getenv('PAYSTACK_PUBLIC_KEY') ?: 'your public key '
     );
 }
 
@@ -20,7 +20,7 @@ if (!defined('PAYSTACK_PUBLIC_KEY')) {
 if (!defined('PAYSTACK_SECRET_KEY')) {
     define(
         'PAYSTACK_SECRET_KEY',
-        getenv('PAYSTACK_SECRET_KEY') ?: 'pk_test_0e8af6badd07223758fd23affa2ddb5e38eec126'
+        getenv('PAYSTACK_SECRET_KEY') ?: 'your private key'
     );
 }
 
