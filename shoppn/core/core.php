@@ -5,6 +5,7 @@ session_start();
 date_default_timezone_set('Africa/Accra');
 
 require_once __DIR__ . '/db_class.php';
+require_once __DIR__ . '/paystack_config.php';
 
 
 if (!defined('BASE_URL')) {
@@ -86,6 +87,53 @@ function require_admin()
 
         redirect('/index.php');
     }
+}
+
+
+/**
+ * Helper to get a safe product image URL or null if file does not exist on disk.
+ */
+function get_product_image_url($filename)
+{
+    if (empty($filename)) {
+        return null;
+    }
+
+    $clean = basename(trim((string) $filename));
+    if ($clean === '') {
+        return null;
+    }
+
+    $fullPath = __DIR__ . '/../images/products/' . $clean;
+    if (file_exists($fullPath) && is_file($fullPath)) {
+        return BASE_URL . '/images/products/' . rawurlencode($clean);
+    }
+
+    return null;
+}
+
+
+/**
+ * Helper to get a safe customer profile image URL or default avatar.
+ */
+function get_customer_image_url($filename = null)
+{
+    if (!empty($filename)) {
+        $clean = basename(trim((string) $filename));
+        if ($clean !== '') {
+            $fullPath = __DIR__ . '/../images/customers/' . $clean;
+            if (file_exists($fullPath) && is_file($fullPath)) {
+                return BASE_URL . '/images/customers/' . rawurlencode($clean);
+            }
+        }
+    }
+
+    $defaultAvatar = __DIR__ . '/../images/customers/default_avatar.png';
+    if (file_exists($defaultAvatar)) {
+        return BASE_URL . '/images/customers/default_avatar.png';
+    }
+
+    return null;
 }
 
 ?>
