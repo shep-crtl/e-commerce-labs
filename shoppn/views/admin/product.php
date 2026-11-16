@@ -156,13 +156,17 @@ include __DIR__ . '/../layout/header.php';
                 >
                 <span id="product_image-error" class="field-error"></span>
 
-                <?php if ($isEdit && !empty($editProduct['product_image'])): ?>
+                <?php
+                $editImgUrl = ($isEdit && !empty($editProduct['product_image'])) ? get_product_image_url($editProduct['product_image']) : null;
+                if ($editImgUrl):
+                ?>
                     <div style="margin-top: 10px;">
                         <p style="margin-bottom: 5px; font-weight: bold;">Current Image:</p>
                         <img
-                            src="<?= BASE_URL ?>/images/products/<?= htmlspecialchars($editProduct['product_image']) ?>"
+                            src="<?= $editImgUrl ?>"
                             alt="<?= htmlspecialchars($editProduct['product_title']) ?>"
                             style="max-width: 120px; border: 1px solid #ccc; padding: 3px; border-radius: 4px;"
+                            onerror="this.style.display='none';"
                         >
                     </div>
                 <?php endif; ?>
@@ -202,20 +206,23 @@ include __DIR__ . '/../layout/header.php';
                     <tr>
                         <td><?= htmlspecialchars($prod['product_id']) ?></td>
                         <td>
-                            <?php if (!empty($prod['product_image'])): ?>
+                            <?php $tableImgUrl = get_product_image_url($prod['product_image'] ?? ''); ?>
+                            <?php if ($tableImgUrl): ?>
                                 <img
-                                    src="<?= BASE_URL ?>/images/products/<?= htmlspecialchars($prod['product_image']) ?>"
+                                    src="<?= $tableImgUrl ?>"
                                     alt="<?= htmlspecialchars($prod['product_title']) ?>"
-                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"
+                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; display: block;"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                                 >
+                                <span style="display: none; color: #888; font-size: 0.8rem;">No image</span>
                             <?php else: ?>
-                                No image
+                                <span style="color: #888; font-size: 0.8rem;">No image</span>
                             <?php endif; ?>
                         </td>
                         <td><?= htmlspecialchars($prod['product_title']) ?></td>
                         <td><?= htmlspecialchars($prod['cat_name'] ?? 'N/A') ?></td>
                         <td><?= htmlspecialchars($prod['brand_name'] ?? 'N/A') ?></td>
-                        <td>$<?= number_format($prod['product_price'], 2) ?></td>
+                        <td>GH₵ <?= number_format($prod['product_price'], 2) ?></td>
                         <td>
                             <a
                                 href="<?= BASE_URL ?>/views/admin/product.php?edit_id=<?= $prod['product_id'] ?>"
