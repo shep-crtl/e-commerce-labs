@@ -80,6 +80,12 @@ include __DIR__ . '/layout/header.php';
 
         <h2><?= $pageHeading ?></h2>
 
+        <?php if (!$isSearch && file_exists(__DIR__ . '/../images/ad_banner.gif')): ?>
+            <div class="ad-banner-wrap" style="margin-bottom: 25px;">
+                <img src="<?= BASE_URL ?>/images/ad_banner.gif" alt="Special Offers" style="width: 100%; border-radius: 6px; display: block; max-height: 120px; object-fit: cover;">
+            </div>
+        <?php endif; ?>
+
         <?php if (isset($_SESSION['success'])): ?>
             <p class="success">
                 <?= htmlspecialchars($_SESSION['success'], ENT_QUOTES, 'UTF-8') ?>
@@ -116,13 +122,16 @@ include __DIR__ . '/layout/header.php';
 
                     <div class="product-card">
 
+                        <?php $imgUrl = get_product_image_url($prod['product_image'] ?? ''); ?>
                         <a href="<?= BASE_URL ?>/views/single_product.php?pro_id=<?= (int) $prod['product_id'] ?>" class="product-card-img-link">
-                            <?php if (!empty($prod['product_image'])): ?>
+                            <?php if ($imgUrl): ?>
                                 <img
-                                    src="<?= BASE_URL ?>/images/products/<?= htmlspecialchars($prod['product_image'], ENT_QUOTES, 'UTF-8') ?>"
+                                    src="<?= $imgUrl ?>"
                                     alt="<?= htmlspecialchars($prod['product_title'], ENT_QUOTES, 'UTF-8') ?>"
                                     class="product-img"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                 >
+                                <div class="product-img-placeholder" style="display: none;">No Image</div>
                             <?php else: ?>
                                 <div class="product-img-placeholder">No Image</div>
                             <?php endif; ?>
@@ -135,7 +144,7 @@ include __DIR__ . '/layout/header.php';
                             </h3>
 
                             <p class="product-price">
-                                $<?= number_format((float) $prod['product_price'], 2) ?>
+                                GH₵ <?= number_format((float) $prod['product_price'], 2) ?>
                             </p>
 
                             <div class="product-card-actions">

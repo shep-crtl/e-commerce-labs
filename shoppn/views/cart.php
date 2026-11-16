@@ -21,6 +21,7 @@
  */
 
 require_once __DIR__ . '/../core/core.php';
+header('Cache-Control: private, no-store, max-age=0');
 require_once __DIR__ . '/../controllers/CartController.php';
 
 $cartController = new CartController();
@@ -100,13 +101,16 @@ include __DIR__ . '/layout/header.php';
                                     </td>
                                     <td>
                                         <div class="cart-product-cell">
+                                            <?php $imgUrl = get_product_image_url($item['product_image'] ?? ''); ?>
                                             <a href="<?= BASE_URL ?>/views/single_product.php?pro_id=<?= (int) $item['p_id'] ?>">
-                                                <?php if (!empty($item['product_image'])): ?>
+                                                <?php if ($imgUrl): ?>
                                                     <img
-                                                        src="<?= BASE_URL ?>/images/products/<?= htmlspecialchars($item['product_image'], ENT_QUOTES, 'UTF-8') ?>"
+                                                        src="<?= $imgUrl ?>"
                                                         alt="<?= htmlspecialchars($item['product_title'], ENT_QUOTES, 'UTF-8') ?>"
                                                         class="cart-product-thumb"
+                                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                                     >
+                                                    <div class="cart-product-thumb cart-product-thumb--placeholder" style="display: none;">No image</div>
                                                 <?php else: ?>
                                                     <div class="cart-product-thumb cart-product-thumb--placeholder">No image</div>
                                                 <?php endif; ?>
@@ -119,7 +123,7 @@ include __DIR__ . '/layout/header.php';
                                         </div>
                                     </td>
                                     <td class="text-right">
-                                        $<?= number_format($itemPrice, 2) ?>
+                                        GH₵ <?= number_format($itemPrice, 2) ?>
                                     </td>
                                     <td class="text-center">
                                         <input
@@ -138,7 +142,7 @@ include __DIR__ . '/layout/header.php';
                                         >
                                     </td>
                                     <td class="text-right cart-line-total">
-                                        $<?= number_format($lineTotal, 2) ?>
+                                        GH₵ <?= number_format($lineTotal, 2) ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -149,7 +153,7 @@ include __DIR__ . '/layout/header.php';
                                     <strong>Cart Total / Subtotal:</strong>
                                 </td>
                                 <td class="text-right cart-total-amount">
-                                    <strong>$<?= number_format((float) $cartTotal, 2) ?></strong>
+                                    <strong>GH₵ <?= number_format((float) $cartTotal, 2) ?></strong>
                                 </td>
                             </tr>
                         </tfoot>

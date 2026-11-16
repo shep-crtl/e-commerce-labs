@@ -49,12 +49,15 @@ include __DIR__ . '/layout/header.php';
         <div class="product-detail">
 
             <div class="product-detail-img-wrap">
-                <?php if (!empty($product['product_image'])): ?>
+                <?php $imgUrl = get_product_image_url($product['product_image'] ?? ''); ?>
+                <?php if ($imgUrl): ?>
                     <img
-                        src="<?= BASE_URL ?>/images/products/<?= htmlspecialchars($product['product_image'], ENT_QUOTES, 'UTF-8') ?>"
+                        src="<?= $imgUrl ?>"
                         alt="<?= htmlspecialchars($product['product_title'], ENT_QUOTES, 'UTF-8') ?>"
                         class="product-detail-img"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                     >
+                    <div class="product-img-placeholder product-img-placeholder--lg" style="display: none;">No Image Available</div>
                 <?php else: ?>
                     <div class="product-img-placeholder product-img-placeholder--lg">No Image Available</div>
                 <?php endif; ?>
@@ -67,7 +70,7 @@ include __DIR__ . '/layout/header.php';
                 </h2>
 
                 <p class="product-detail-price">
-                    $<?= number_format((float) $product['product_price'], 2) ?>
+                    GH₵ <?= number_format((float) $product['product_price'], 2) ?>
                 </p>
 
                 <dl class="product-meta">
