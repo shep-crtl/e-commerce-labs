@@ -108,4 +108,45 @@ class CartController
     {
         return $this->cartModel->updateQty($productId, $newQty, $ip);
     }
+
+    // ==========================================
+    // TASK 13 METHODS
+    // ==========================================
+
+    /**
+     * Check if a payment reference was already processed.
+     *
+     * @param  string $reference
+     * @return bool
+     */
+    public function isReferenceProcessed($reference)
+    {
+        return $this->cartModel->isReferenceProcessed($reference);
+    }
+
+    /**
+     * Process payment and record order.
+     *
+     * @param  int    $customerId
+     * @param  string $ip
+     * @param  string $reference
+     * @param  float  $amount
+     * @param  string $currency
+     * @return int|false
+     */
+    public function processPayment($customerId, $ip, $reference, $amount, $currency = 'GHS')
+    {
+        return $this->cartModel->processPayment($customerId, $ip, $reference, $amount, $currency);
+    }
+
+    /**
+     * Get order by ID with line items.
+     *
+     * @param  int $orderId
+     * @return array|false
+     */
+    public function getOrderById($orderId)
+    {
+        return $this->cartModel->getOrderById($orderId);
+    }
 }
