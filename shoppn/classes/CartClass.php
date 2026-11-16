@@ -231,4 +231,254 @@ class CartClass extends Database
 
         return $result;
     }
+
+    // ==========================================
+    // TASK 13: PAYMENT & ORDER PROCESSING
+    // ==========================================
+
+    /**
+     * Check if a payment reference has already been processed to prevent duplicates.
+     *
+     * @param  string $reference
+     * @return bool
+     */
+    public function isReferenceProcessed($reference)
+    {
+        $reference = trim((string) $reference);
+        if ($reference === '') {
+            return false;
+        }
+
+        // Required schema migration: payment_ref must be UNIQUE.
+        $stmt = $this->conn->prepare('SELECT pay_id FROM payment WHERE payment_ref = ? LIMIT 1');
+        if (!$stmt) {
+            error_log('CartClass::isReferenceProcessed requires payment.payment_ref: ' . $this->conn->error);
+            return false;
+        }
+        $stmt->bind_param('s', $reference);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $found = ($res && $res->num_rows > 0);
+        $stmt->close();
+        return $found;
+    }
+
+    /**
+     * Process payment and record order inside a database transaction.
+     *
+     * 1. Generates 6-digit invoice number.
+     * 2. Inserts into orders table.
+     * 3. Copies purchased cart items into orderdetails table.
+     * 4. Inserts payment record with verified reference.
+     * 5. Deletes items from cart.
+     * 6. Commits transaction and returns new order_id.
+     *
+     * @param  int    $customer_id
+     * @param  string $ip
+     * @param  string $reference
+     * @param  float  $amount
+     * @param  string $currency
+     * @return int|false Returns new order_id on success, false on failure.
+     */
+    public function processPayment($customer_id, $ip, $reference, $amount, $currency = 'GHS')
+    {
+        $customer_id = (int) $customer_id;
+        $ip = trim((string) $ip);
+        $reference = trim((string) $reference);
+        $amount = (float) $amount;
+
+        if ($customer_id <= 0 || $amount <= 0 || $reference === '') {
+            error_log('CartClass::processPayment: Invalid input parameters.');
+            return false;
+        }
+
+        // Prevent duplicate processing of the same payment reference
+        if ($this->isReferenceProcessed($reference)) {
+            error_log('CartClass::processPayment: Reference ' . $reference . ' already processed.');
+            return false;
+        }
+
+        // Retrieve current cart items
+        $cartItems = $this->getCartItems($ip);
+        if (empty($cartItems)) {
+            error_log('CartClass::processPayment: Cart is empty for IP ' . $ip);
+            return false;
+        }
+
+        // Start Database Transaction
+        $this->conn->begin_transaction();
+
+        try {
+            // Lock cart rows and revalidate the amount before recording the order.
+            $lock = $this->conn->prepare('SELECT c.p_id, c.qty, p.product_price FROM cart c JOIN products p ON p.product_id = c.p_id WHERE c.ip_add = ? FOR UPDATE');
+            if (!$lock) { throw new Exception('Could not lock cart: ' . $this->conn->error); }
+            $lock->bind_param('s', $ip);
+            if (!$lock->execute()) { throw new Exception('Could not read locked cart.'); }
+            $lockedItems = $lock->get_result()->fetch_all(MYSQLI_ASSOC);
+            $lock->close();
+            $lockedTotal = 0;
+            foreach ($lockedItems as $item) { $lockedTotal += ((int)$item['qty']) * ((float)$item['product_price']); }
+            if (count($lockedItems) !== count($cartItems) || (int) round($lockedTotal * 100) !== (int) round($amount * 100)) {
+                throw new Exception('Cart total changed during payment processing.');
+            }
+
+            // 1. Generate 6-digit invoice number
+            $invoiceNo = mt_rand(100000, 999999);
+
+            // 2. Insert into orders table
+            $stmtOrder = $this->conn->prepare(
+                "INSERT INTO orders (customer_id, invoice_no, order_date, order_status)
+                 VALUES (?, ?, CURDATE(), 'paid')"
+            );
+            if (!$stmtOrder) {
+                throw new Exception('Prepare orders insert failed: ' . $this->conn->error);
+            }
+            $stmtOrder->bind_param('ii', $customer_id, $invoiceNo);
+            if (!$stmtOrder->execute()) {
+                throw new Exception('Execute orders insert failed: ' . $stmtOrder->error);
+            }
+            $orderId = $this->conn->insert_id;
+            $stmtOrder->close();
+
+            if (!$orderId || $orderId <= 0) {
+                throw new Exception('Invalid inserted order_id.');
+            }
+
+            // 3. Copy cart items into orderdetails table
+            $stmtDetail = $this->conn->prepare(
+                'INSERT INTO orderdetails (order_id, product_id, qty) VALUES (?, ?, ?)'
+            );
+            if (!$stmtDetail) {
+                throw new Exception('Prepare orderdetails insert failed: ' . $this->conn->error);
+            }
+
+            foreach ($lockedItems as $item) {
+                $pId = (int) $item['p_id'];
+                $qty = (int) $item['qty'];
+                $stmtDetail->bind_param('iii', $orderId, $pId, $qty);
+                if (!$stmtDetail->execute()) {
+                    throw new Exception('Execute orderdetails insert failed for product ' . $pId);
+                }
+            }
+            $stmtDetail->close();
+
+            // 4. Record the verified reference. A UNIQUE index prevents replay races.
+            // Without this column, fail and roll back rather than creating an untraceable order.
+            $stmtPay = $this->conn->prepare(
+                'INSERT INTO payment (amt, customer_id, order_id, currency, payment_date, payment_ref) VALUES (?, ?, ?, ?, CURDATE(), ?)'
+            );
+            if (!$stmtPay) {
+                throw new Exception('Payment insert unavailable (check payment_ref migration): ' . $this->conn->error);
+            }
+            $stmtPay->bind_param('diiss', $amount, $customer_id, $orderId, $currency, $reference);
+            if (!$stmtPay->execute()) {
+                throw new Exception('Payment record insert failed: ' . $stmtPay->error);
+            }
+            $stmtPay->close();
+
+            // 5. Delete the same IP-scoped cart that was used to calculate the total.
+            // Do not delete other customers' items via OR c_id = customer_id.
+            $stmtDel = $this->conn->prepare('DELETE FROM cart WHERE ip_add = ?');
+            if (!$stmtDel) {
+                throw new Exception('Cart clear prepare failed: ' . $this->conn->error);
+            }
+            $stmtDel->bind_param('s', $ip);
+            if (!$stmtDel->execute()) {
+                throw new Exception('Cart clear failed: ' . $stmtDel->error);
+            }
+            $removed = $stmtDel->affected_rows;
+            $stmtDel->close();
+            if ($removed !== count($cartItems)) {
+                throw new Exception('Cart contents changed while completing the order.');
+            }
+
+            // Commit Transaction
+            $this->conn->commit();
+            return (int) $orderId;
+
+        } catch (Throwable $e) {
+            $this->conn->rollback();
+            error_log('CartClass::processPayment transaction rolled back: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Retrieve complete order details by order_id.
+     * Includes customer info, payment info, and purchased product items.
+     *
+     * @param  int $order_id
+     * @return array|false
+     */
+    public function getOrderById($order_id)
+    {
+        $order_id = (int) $order_id;
+        if ($order_id <= 0) {
+            return false;
+        }
+
+        // 1. Fetch order + customer + payment header info
+        $hasPayRefCol = false;
+        $colCheck = $this->conn->query("SHOW COLUMNS FROM payment LIKE 'payment_ref'");
+        if ($colCheck && $colCheck->num_rows > 0) {
+            $hasPayRefCol = true;
+        }
+
+        if ($hasPayRefCol) {
+            $sql = "SELECT o.*, c.customer_name, c.customer_email, c.customer_contact, c.customer_city, c.customer_country,
+                           p.pay_id, p.amt AS payment_amt, p.currency AS payment_currency, p.payment_date, p.payment_ref
+                    FROM orders o
+                    JOIN customer c ON o.customer_id = c.customer_id
+                    LEFT JOIN payment p ON o.order_id = p.order_id
+                    WHERE o.order_id = ?
+                    LIMIT 1";
+        } else {
+            $sql = "SELECT o.*, c.customer_name, c.customer_email, c.customer_contact, c.customer_city, c.customer_country,
+                           p.pay_id, p.amt AS payment_amt, p.currency AS payment_currency, p.payment_date,
+                           NULL AS payment_ref
+                    FROM orders o
+                    JOIN customer c ON o.customer_id = c.customer_id
+                    LEFT JOIN payment p ON o.order_id = p.order_id
+                    WHERE o.order_id = ?
+                    LIMIT 1";
+        }
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log('CartClass::getOrderById prepare failed: ' . $this->conn->error);
+            return false;
+        }
+
+        $stmt->bind_param('i', $order_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $order = $result ? $result->fetch_assoc() : null;
+        $stmt->close();
+
+        if (!$order) {
+            return false;
+        }
+
+        // 2. Fetch order items
+        $stmtItems = $this->conn->prepare(
+            "SELECT od.*, pr.product_title, pr.product_price, pr.product_image
+             FROM orderdetails od
+             JOIN products pr ON od.product_id = pr.product_id
+             WHERE od.order_id = ?"
+        );
+
+        $items = [];
+        if ($stmtItems) {
+            $stmtItems->bind_param('i', $order_id);
+            $stmtItems->execute();
+            $itemsRes = $stmtItems->get_result();
+            if ($itemsRes) {
+                $items = $itemsRes->fetch_all(MYSQLI_ASSOC);
+            }
+            $stmtItems->close();
+        }
+
+        $order['items'] = $items;
+        return $order;
+    }
 }
