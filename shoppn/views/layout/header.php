@@ -41,8 +41,12 @@ $headerCartTotal = $headerCartController->getCartTotal($headerCartIp);
     <div class="header-container">
 
         <h1>
-            <a href="<?= BASE_URL ?>/index.php">
-                ShopPN
+            <a href="<?= BASE_URL ?>/index.php" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: white;">
+                <?php if (file_exists(__DIR__ . '/../../images/logo.gif')): ?>
+                    <img src="<?= BASE_URL ?>/images/logo.gif" alt="ShopPN" style="height: 34px; vertical-align: middle; border-radius: 3px;">
+                <?php else: ?>
+                    ShopPN
+                <?php endif; ?>
             </a>
         </h1>
 
@@ -70,6 +74,10 @@ $headerCartTotal = $headerCartController->getCartTotal($headerCartIp);
 
             <a href="<?= BASE_URL ?>/index.php">
                 Home
+            </a>
+
+            <a href="<?= BASE_URL ?>/views/all_products.php">
+                All Products
             </a>
 
             <a href="<?= BASE_URL ?>/views/cart.php">
@@ -138,7 +146,7 @@ $headerCartTotal = $headerCartController->getCartTotal($headerCartIp);
     <div class="cart-summary-bar">
         <div class="cart-summary-inner">
             <span class="cart-summary-text">
-                Shopping Cart &mdash; Total Items: <strong><?= (int) $headerCartCount ?></strong> | Total Price: <strong>$<?= number_format((float) $headerCartTotal, 2) ?></strong>
+                Shopping Cart &mdash; Total Items: <strong><?= (int) $headerCartCount ?></strong> | Total Price: <strong>GH₵ <?= number_format((float) $headerCartTotal, 2) ?></strong>
             </span>
             <a href="<?= BASE_URL ?>/views/cart.php" class="cart-summary-btn">
                 Go to Cart &rarr;
